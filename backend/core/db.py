@@ -1,7 +1,7 @@
-import aiosqlite, json
+import aiosqlite, json, os
 from datetime import datetime
 
-DB = "sentiment.db"
+DB = os.environ.get("DB_PATH", "sentiment.db")
 
 async def init_db():
     async with aiosqlite.connect(DB) as db:
