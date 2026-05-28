@@ -1,0 +1,12 @@
+fastapi
+uvicorn[standard]
+groq
+httpx
+ntscraper
+trafilatura
+feedparser
+aiosqlite
+pydantic
+python-multipart
+python-dotenv
+certifi
