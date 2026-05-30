@@ -4,3 +4,4 @@ from typing import List
 class AnalyseRequest(BaseModel):
     keyword: str
     sources: List[str] = ["tw", "rd", "nw"]
+    date_range: str = "all"

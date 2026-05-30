@@ -5,7 +5,17 @@ import FilterTabs from "../components/FilterTabs"
 import PostFeed from "../components/PostFeed"
 import ExportButton from "../components/ExportButton"
 
-const SRC_LABELS = { rd: "Reddit", nw: "News" }
+const SENTIMENT_COLOR = {
+  positive: "#10b981",
+  negative: "#f43f5e",
+  neutral: "#94a3b8",
+}
+
+function getSentimentLabel(score) {
+  if (score >= 0.2) return "Positive"
+  if (score <= -0.2) return "Negative"
+  return "Neutral"
+}
 
 export default function ResultsPage({ result, keyword, sources, onBack }) {
   const [activeFilter, setActiveFilter] = useState("all")
@@ -17,71 +27,92 @@ export default function ResultsPage({ result, keyword, sources, onBack }) {
     return p.src === activeFilter
   })
 
-  const platformNames = sources.map((s) => SRC_LABELS[s] || s).join(", ")
-  const date = new Date().toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })
+  const score = summary.score ?? 0
+  const sentLabel = getSentimentLabel(score)
+  const sentColor = SENTIMENT_COLOR[sentLabel.toLowerCase()] || SENTIMENT_COLOR.neutral
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      {/* Header */}
-      <div className="bg-brand px-6 py-4">
-        <div className="max-w-4xl mx-auto flex items-center gap-3">
-          <button onClick={onBack} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-            <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
-              <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-              </svg>
-            </div>
-            <span className="text-white font-semibold text-lg">Sentiment Intelligence</span>
-          </button>
+    <div style={{ minHeight: "100vh", background: "linear-gradient(135deg, #0f172a 0%, #0d1b35 50%, #0f172a 100%)" }}>
+      {/* Sticky top bar */}
+      <div style={{
+        position: "sticky", top: 0, zIndex: 20, height: "56px",
+        background: "rgba(15,23,42,0.95)", backdropFilter: "blur(12px)",
+        WebkitBackdropFilter: "blur(12px)",
+        borderBottom: "1px solid #334155",
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        padding: "0 40px", gap: "16px",
+      }}>
+        {/* Left: back */}
+        <button
+          onClick={onBack}
+          style={{
+            display: "flex", alignItems: "center", gap: "6px",
+            padding: "6px 14px", borderRadius: "8px", border: "1px solid #334155",
+            background: "transparent", color: "#c4c6cf", fontSize: "14px",
+            cursor: "pointer", transition: "all 200ms ease", fontFamily: "Inter, sans-serif",
+            whiteSpace: "nowrap", flexShrink: 0,
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#3b82f6"; e.currentTarget.style.color = "#3b82f6" }}
+          onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#334155"; e.currentTarget.style.color = "#c4c6cf" }}
+        >
+          ← New Search
+        </button>
+
+        {/* Center: keyword + sentiment pill + score */}
+        <div style={{ display: "flex", alignItems: "center", gap: "10px", flex: 1, justifyContent: "center", overflow: "hidden" }}>
+          <span style={{ fontSize: "20px", fontWeight: 500, color: "#e3e2e6", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+            {keyword}
+          </span>
+          <span style={{
+            padding: "2px 10px", borderRadius: "9999px", fontSize: "12px", fontWeight: 600,
+            background: `${sentColor}1a`, border: `1px solid ${sentColor}`, color: sentColor, flexShrink: 0,
+          }}>
+            {sentLabel}
+          </span>
+          <span style={{ fontSize: "14px", color: "#c4c6cf", flexShrink: 0 }}>
+            {score >= 0 ? "+" : ""}{score.toFixed(2)}
+          </span>
+        </div>
+
+        {/* Right: export */}
+        <div style={{ flexShrink: 0 }}>
+          <ExportButton posts={posts} keyword={keyword} summary={summary} />
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 py-6 space-y-5">
-        {/* Title row */}
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-semibold text-slate-900">
-              "{keyword}"
-            </h1>
-            <p className="text-sm text-slate-500 mt-1">
-              {posts.length} posts · {platformNames} · {date}
-            </p>
+      {/* Summary bar */}
+      <div style={{ paddingTop: "24px" }}>
+        <SummaryStrip summary={summary} />
+      </div>
+
+      {/* Metric cards */}
+      <MetricCards summary={summary} />
+
+      {/* Top phrases */}
+      {summary.top_phrases && summary.top_phrases.length > 0 && (
+        <div style={{ padding: "0 40px 24px" }}>
+          <div style={{ fontSize: "12px", fontWeight: 600, letterSpacing: "0.05em", color: "#8e9199", textTransform: "uppercase", marginBottom: "10px" }}>
+            TOP PHRASES
           </div>
-          <div className="flex gap-2">
-            <button
-              onClick={onBack}
-              className="px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg text-sm font-medium hover:border-brand/50 hover:text-brand transition-colors"
-            >
-              New search
-            </button>
-            <ExportButton posts={posts} keyword={keyword} />
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+            {summary.top_phrases.map((phrase, i) => (
+              <span key={i} style={{
+                padding: "4px 12px", borderRadius: "9999px", fontSize: "14px",
+                background: "rgba(59,130,246,0.1)", border: "1px solid rgba(59,130,246,0.3)",
+                color: "#adc8f5",
+              }}>
+                {phrase}
+              </span>
+            ))}
           </div>
         </div>
+      )}
 
-        {/* Summary strip */}
-        <SummaryStrip summary={summary} />
+      {/* Filter tabs */}
+      <FilterTabs active={activeFilter} onChange={setActiveFilter} sources={sources} posts={posts} />
 
-        {/* Metric cards */}
-        <MetricCards summary={summary} />
-
-        {/* Top phrases */}
-        {summary.top_phrases && summary.top_phrases.length > 0 && (
-          <div>
-            <p className="text-xs text-slate-400 uppercase tracking-wide font-medium mb-2">Top phrases</p>
-            <div className="flex flex-wrap gap-2">
-              {summary.top_phrases.map((phrase, i) => (
-                <span key={i} className="px-3 py-1 bg-white border border-slate-200 text-slate-600 rounded-full text-sm">
-                  {phrase}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Filter tabs */}
-        <FilterTabs active={activeFilter} onChange={setActiveFilter} sources={sources} />
-
-        {/* Post feed */}
+      {/* Post feed */}
+      <div style={{ padding: "24px 40px" }}>
         <PostFeed posts={filteredPosts} />
       </div>
     </div>

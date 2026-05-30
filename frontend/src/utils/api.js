@@ -8,8 +8,18 @@ export const api = {
       body: JSON.stringify({ keyword, sources }),
     }).then((r) => r.json()),
 
-  streamUrl: (keyword, sources) =>
-    `${BASE}/api/analyse/stream?keyword=${encodeURIComponent(keyword)}&sources=${sources.join(",")}`,
+  streamUrl: (keyword, sources, dateRange = "all") =>
+    `${BASE}/api/analyse/stream?keyword=${encodeURIComponent(keyword)}&sources=${sources.join(",")}&date_range=${dateRange}`,
 
   history: () => fetch(`${BASE}/api/history`).then((r) => r.json()),
+
+  login: (email, password) =>
+    fetch(`${BASE}/api/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    }).then(async (r) => {
+      if (!r.ok) throw new Error((await r.json()).detail || "Login failed")
+      return r.json()
+    }),
 }

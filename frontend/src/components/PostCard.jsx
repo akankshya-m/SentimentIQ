@@ -1,55 +1,95 @@
-const SRC_META = {
-  rd: { label: "Reddit", color: "bg-orange-100 text-orange-700", dot: "bg-orange-500" },
-  nw: { label: "News", color: "bg-violet-100 text-violet-700", dot: "bg-violet-500" },
+const SENTIMENT_COLOR = {
+  positive: "#10b981",
+  negative: "#f43f5e",
+  neutral: "#94a3b8",
 }
 
-const SENTIMENT_META = {
-  positive: { label: "Positive", color: "bg-green-100 text-green-700 border border-green-200" },
-  neutral: { label: "Neutral", color: "bg-slate-100 text-slate-600 border border-slate-200" },
-  negative: { label: "Negative", color: "bg-red-100 text-red-700 border border-red-200" },
-}
+const SRC_LABEL = { rd: "RD", nw: "NW" }
 
-export default function PostCard({ post, index }) {
-  const src = SRC_META[post.src] || SRC_META.nw
-  const sentiment = SENTIMENT_META[post.sentiment] || SENTIMENT_META.neutral
+export default function PostCard({ post }) {
+  const color = SENTIMENT_COLOR[post.sentiment] || SENTIMENT_COLOR.neutral
+  const label = post.sentiment ? post.sentiment.charAt(0).toUpperCase() + post.sentiment.slice(1) : "Neutral"
+  const conf = post.confidence ? `${Math.round(post.confidence * 100)}%` : null
+  const src = SRC_LABEL[post.src] || post.src?.toUpperCase()
+
+  function handleClick() {
+    if (post.url) window.open(post.url, "_blank", "noopener,noreferrer")
+  }
 
   return (
     <div
-      className="bg-white border border-slate-200 rounded-xl p-5 hover:border-brand/40 hover:shadow-sm transition-all duration-200"
-      style={{ animationDelay: `${index * 40}ms`, animationFillMode: "both" }}
+      onClick={handleClick}
+      style={{
+        display: "flex",
+        background: "rgba(30,41,59,0.8)", backdropFilter: "blur(12px)",
+        WebkitBackdropFilter: "blur(12px)",
+        border: "1px solid #334155", borderRadius: "12px",
+        borderLeft: `4px solid ${color}`,
+        padding: "16px", gap: "12px",
+        cursor: post.url ? "pointer" : "default",
+        transition: "border-color 200ms ease, background 200ms ease",
+      }}
+      onMouseEnter={(e) => { if (post.url) e.currentTarget.style.borderColor = "#4a6080" }}
+      onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#334155" }}
     >
-      {/* Top row: text + sentiment badge */}
-      <div className="flex gap-4">
-        <p className="flex-1 text-slate-800 text-sm leading-relaxed">{post.text}</p>
-        <span className={`flex-shrink-0 h-fit text-xs font-medium px-2.5 py-1 rounded-full ${sentiment.color}`}>
-          {sentiment.label}
-        </span>
-      </div>
-
-      {/* Middle row: platform + reason + confidence */}
-      <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-500">
-        <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full font-medium ${src.color}`}>
-          <span className={`w-1.5 h-1.5 rounded-full ${src.dot}`} />
-          {src.label}
-        </span>
-        {post.reason && (
-          <span className="flex-1 min-w-0 truncate italic">{post.reason}</span>
-        )}
-        {post.confidence && (
-          <span className="font-mono ml-auto flex-shrink-0">{Math.round(post.confidence * 100)}%</span>
-        )}
-      </div>
-
-      {/* Key phrases */}
-      {post.kp && post.kp.length > 0 && (
-        <div className="mt-2.5 flex flex-wrap gap-1.5">
-          {post.kp.map((phrase, i) => (
-            <span key={i} className="text-xs px-2 py-0.5 bg-slate-100 text-slate-500 rounded-full">
-              {phrase}
-            </span>
-          ))}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        {/* Top row */}
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "12px", marginBottom: "8px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+            {/* Source badge */}
+            <span style={{
+              padding: "2px 8px", borderRadius: "9999px", fontSize: "11px", fontWeight: 600,
+              background: "#1e3a5f", color: "#adc8f5", border: "1px solid #3b82f6",
+            }}>{src}</span>
+            {post.author && (
+              <span style={{ fontSize: "12px", fontWeight: 600, color: "#8e9199", letterSpacing: "0.05em" }}>
+                {post.author}
+              </span>
+            )}
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
+            {conf && (
+              <span style={{ fontSize: "12px", fontWeight: 600, color, letterSpacing: "0.05em" }}>{conf}</span>
+            )}
+            {/* Sentiment pill */}
+            <span style={{
+              padding: "2px 10px", borderRadius: "9999px", fontSize: "12px", fontWeight: 600,
+              background: `${color}1a`, border: `1px solid ${color}`,
+              color, flexShrink: 0,
+            }}>{label}</span>
+          </div>
         </div>
-      )}
+
+        {/* Post text */}
+        <p style={{
+          fontSize: "14px", color: "#c4c6cf", lineHeight: 1.6, margin: "0 0 8px",
+          display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden",
+        }}>
+          {post.text}
+        </p>
+
+        {/* Reason */}
+        {post.reason && (
+          <p style={{ fontSize: "14px", color: "#8e9199", fontStyle: "italic", margin: "0 0 10px" }}>
+            💡 {post.reason}
+          </p>
+        )}
+
+        {/* Key phrases */}
+        {post.kp && post.kp.length > 0 && (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+            {post.kp.map((phrase, i) => (
+              <span key={i} style={{
+                padding: "2px 10px", borderRadius: "9999px", fontSize: "12px",
+                background: "rgba(59,130,246,0.1)", border: "1px solid rgba(59,130,246,0.3)",
+                color: "#adc8f5",
+              }}>
+                {phrase}
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   )
 }

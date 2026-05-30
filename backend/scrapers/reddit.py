@@ -1,9 +1,25 @@
+import os
 import httpx
 from typing import List, Dict
 
-async def scrape(keyword: str, limit: int = 25) -> List[Dict]:
-    params = {"q": keyword, "limit": limit}
-    headers = {"User-Agent": "SentimentPOC/1.0"}
+REDDIT_TIME_MAP = {
+    "today":         "day",
+    "yesterday":     "day",
+    "last_week":     "week",
+    "last_month":    "month",
+    "last_3_months": "year",
+    "last_6_months": "year",
+}
+
+async def scrape(keyword: str, limit: int = 25, date_range: str = "all") -> List[Dict]:
+    params = {"q": keyword, "limit": limit, "sort": "new"}
+    if date_range in REDDIT_TIME_MAP:
+        params["t"] = REDDIT_TIME_MAP[date_range]
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_1) "
+                      "AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Safari/605.1.15",
+        "Cookie": os.getenv("REDDIT_COOKIE", ""),
+    }
     results = []
     try:
         async with httpx.AsyncClient() as client:

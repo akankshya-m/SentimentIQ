@@ -1,21 +1,5 @@
-"""
-Modal deployment for Sentiment Analysis backend.
-
-Setup (one-time):
-    pip install modal
-    modal setup
-    modal secret create sentiment-secrets \
-        GROQ_API_KEY=<your-key> \
-        TWITTER_BEARER_TOKEN=<your-token> \
-        TWITTER_ACCESS_TOKEN=<your-token> \
-        TWITTER_ACCESS_TOKEN_SECRET=<your-secret>
-
-Deploy:
-    modal deploy modal_app.py
-
-Serve locally (dev):
-    modal serve modal_app.py
-"""
+# Deploy: modal deploy modal_app.py
+# Dev:    modal serve modal_app.py
 
 import modal
 from pathlib import Path
@@ -41,6 +25,10 @@ image = (
         "python-multipart",
         "python-dotenv",
         "certifi",
+        "langchain",
+        "langchain-groq",
+        "langchain-google-genai",
+        "langchain-core",
     ])
     .add_local_dir(str(BACKEND_DIR), remote_path="/app")
 )

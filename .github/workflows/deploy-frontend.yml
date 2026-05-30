@@ -1,0 +1,33 @@
+name: Deploy Frontend to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths: ['frontend/**']
+
+permissions:
+  pages: write
+  id-token: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - run: cd frontend && npm ci
+
+      - run: cd frontend && npm run build
+        # outputs to /docs via vite.config.js build.outDir
+
+      - uses: actions/configure-pages@v4
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: './docs'
+
+      - uses: actions/deploy-pages@v4

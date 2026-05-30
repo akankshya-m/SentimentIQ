@@ -2,8 +2,148 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --color-bg: #0f172a;
+  --color-surface: #1e293b;
+  --color-surface-high: #293548;
+  --color-border: #334155;
+  --color-primary: #3b82f6;
+  --color-primary-navy: #1e3a5f;
+  --color-on-surface: #e3e2e6;
+  --color-on-surface-variant: #c4c6cf;
+  --color-outline: #8e9199;
+  --color-positive: #10b981;
+  --color-negative: #f43f5e;
+  --color-neutral: #94a3b8;
+  --color-tertiary: #edbf7f;
+  --sidebar-width: 240px;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 body {
-  font-family: "DM Sans", sans-serif;
-  background-color: #f8fafc;
-  color: #1e293b;
+  font-family: 'Inter', sans-serif;
+  background: var(--color-bg);
+  color: var(--color-on-surface);
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+.glass-card {
+  background: rgba(30, 41, 59, 0.8);
+  border: 1px solid #334155;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 12px;
+}
+
+.glass-card-elevated {
+  background: rgba(30, 41, 59, 0.8);
+  border: 1px solid #334155;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 12px;
+  box-shadow: 0px 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+/* ── App shell layout ───────────────────────────── */
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+.app-sidebar {
+  display: none;
+}
+
+.app-bottom-nav {
+  display: flex;
+}
+
+.app-main {
+  flex: 1;
+  min-width: 0;
+  padding-bottom: 64px; /* room for bottom nav on mobile */
+}
+
+/* ── Desktop breakpoint (≥ 1024px) ─────────────── */
+@media (min-width: 1024px) {
+  .app-sidebar {
+    display: flex;
+    flex-direction: column;
+    width: var(--sidebar-width);
+    min-height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    background: rgba(15, 23, 42, 0.98);
+    border-right: 1px solid #334155;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    z-index: 40;
+  }
+
+  .app-bottom-nav {
+    display: none;
+  }
+
+  .app-main {
+    margin-left: var(--sidebar-width);
+    padding-bottom: 0;
+  }
+
+  /* wider page gutters on desktop */
+  .page-gutter {
+    padding-left: 40px;
+    padding-right: 40px;
+  }
+
+  /* history cards 2-column grid on desktop */
+  .history-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+}
+
+@media (max-width: 1023px) {
+  .page-gutter {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .history-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+}
+
+select option {
+  background: #1e293b;
+  color: #e3e2e6;
+}
+
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 4px;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+@keyframes step-spin {
+  to { transform: rotate(360deg); }
 }
